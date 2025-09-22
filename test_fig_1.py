@@ -133,22 +133,23 @@ if __name__ == '__main__':
     rb = 0.005
     ra = rb / 5
     sh1 = 0.01
-    sh2 = 0.0025
+    sh2 = 0.003
     max_time = 1000
     init_num = (20, 2)
     prob_fugal1 = 0.5
     prob_fugal2 = 0.75
-    
-    all_walks, all_bif1 = run_multiple_trials(rb, ra, max_time=max_time, prob_fugal = prob_fugal1, step_size = step_size, init_num = init_num, base_seed=200)
+
+    print('start')
+    all_walks, all_bif1 = run_multiple_trials(rb, ra, max_time=max_time, prob_fugal = prob_fugal1, step_size = step_size, init_num = init_num, base_seed=200); print('done 1')
     plot(all_walks, color='gray', alpha=.5, label='RW')
 
-    all_walks, all_bif2 = run_multiple_trials(rb, ra, max_time=max_time, prob_fugal = prob_fugal2, step_size = step_size, init_num = init_num, base_seed=200)
+    all_walks, all_bif2 = run_multiple_trials(rb, ra, max_time=max_time, prob_fugal = prob_fugal2, step_size = step_size, init_num = init_num, base_seed=200); print('done 2')
     plot(all_walks, color='black', alpha=.5, label='BRW', linewidth=2)
 
-    all_walks, all_bif3 = run_multiple_trials(rb + sh1, ra + sh1, max_time=max_time, prob_fugal = prob_fugal2, step_size = step_size, init_num = init_num, base_seed=200)
+    all_walks, all_bif3 = run_multiple_trials(rb + sh1, ra + sh1, max_time=max_time, prob_fugal = prob_fugal2, step_size = step_size, init_num = init_num, base_seed=200); print('done 3')
     plot(all_walks, color='red', alpha=.25, label=r'BRW, sh. $\beta$ and $\alpha$')
 
-    all_walks, all_bif4 = run_multiple_trials(rb + sh2, ra, max_time=max_time, prob_fugal = prob_fugal2, step_size = step_size, init_num = init_num, base_seed=200)
+    all_walks, all_bif4 = run_multiple_trials(rb + sh2, ra, max_time=max_time, prob_fugal = prob_fugal2, step_size = step_size, init_num = init_num, base_seed=200); print('done 4')
     plot(all_walks, color='blue', alpha=.25, label=r'BRW, inc. $\beta$')
     plt.xlim([0, 250])
     plt.ylim([0, 1200])

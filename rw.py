@@ -1,10 +1,11 @@
 import numpy as np
 from collections.abc import Iterable
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
-def positive_normal_sample(mean, std):
+def positive_normal_sample(rng, mean, std):
     while True:
-        sample = np.random.normal(loc=mean, scale=std)
+        sample = rng.normal(loc=mean, scale=std)
         if sample > 0:
             return sample
 
@@ -77,11 +78,11 @@ def random_walk_1d(rate_bifurcation, rate_annihilation, max_distance: float=None
            ((0 <= prob_bifurcation + prob_annihilation) & (prob_bifurcation + prob_annihilation <= 1)).all()
     
     # set the random seed
-    np.random.seed(seed)
+    rng = np.random.default_rng(seed)
 
     # if the init_num is a tuple, extract a random number
     if type(init_num) in [tuple, list]:
-        init_num = int(round(positive_normal_sample(*init_num)))
+        init_num = int(round(positive_normal_sample(rng, *init_num)))
 
     if max_time is None:
         nsteps = int(round(prob_bifurcation.size / (2 * prob_fugal - 1))) # number of steps
@@ -109,10 +110,11 @@ def random_walk_1d(rate_bifurcation, rate_annihilation, max_distance: float=None
 
         # random number select to select one out of annihilation, branching, elongation
         # using the method of anthitetic variables
-        if time % 2:
-            X = np.random.rand(walkers.size)
-        else:
-            X = 1 - X[np.concatenate((np.flatnonzero(idx_eln), np.repeat(np.flatnonzero(idx_bif), 2)))]
+##        if time % 2:
+##            X = np.random.rand(walkers.size)
+##        else:
+##            X = 1 - X[np.concatenate((np.flatnonzero(idx_eln), np.repeat(np.flatnonzero(idx_bif), 2)))]
+        X = rng.random(walkers.size)
         
         # walkers which will branch
         idx_bif = (X >= prob_annihilation[np.abs(walkers)]) & (X < prob_bifurcation[np.abs(walkers)] + prob_annihilation[np.abs(walkers)])
@@ -134,11 +136,11 @@ def random_walk_1d(rate_bifurcation, rate_annihilation, max_distance: float=None
 
         # generate steps
         # in any other location
-        steps = np.random.choice([-1, 1], p=[1 - prob_fugal, prob_fugal], size=walkers.size) * sign(walkers)
+        steps = rng.choice([-1, 1], p=[1 - prob_fugal, prob_fugal], size=walkers.size) * sign(walkers)
         
         # correction of steps if the walker is at the origin
         walkers_at_origin = walkers == 0
-        steps[walkers_at_origin] = np.random.choice([-1, 1], p=[0.5, 0.5], size=walkers_at_origin.sum()) 
+        steps[walkers_at_origin] = rng.choice([-1, 1], p=[0.5, 0.5], size=walkers_at_origin.sum()) 
 
         # move the walkers
         walkers += steps 
@@ -158,7 +160,7 @@ def random_walk_1d(rate_bifurcation, rate_annihilation, max_distance: float=None
         # count bifurcations
         num_bifurcations[time] = idx_bif.sum()
 
-    # comulate the bifurcations
+    # cumulate the bifurcations
     num_bifurcations = np.cumsum(num_bifurcations)
     
     # make a visit count at different intervals than step size
@@ -181,28 +183,41 @@ def random_walk_1d(rate_bifurcation, rate_annihilation, max_distance: float=None
 
 
 
-def run_multiple_trials(rate_bifurcation, rate_annihilation, max_distance: float=None, max_time: float=None, n_trials: int = 100, step_size: float=0.1, prob_fugal: float = 1, base_seed: int = 42, init_num = 1, bin_size_interp: float = None):
-    """
-    Run multiple trials of the random walk and store each path.
 
-    Parameters:
-        n_trials (int): Number of independent random walk trials.
-        prob_fugal (float): Probability of moving right.
-        base_seed (int): Seed for reproducibility.
 
-    Returns:
-        list of lists: Each inner list is a position trace of one walk.
+def run_multiple_trials(rate_bifurcation, rate_annihilation, 
+                        max_distance: float=None, max_time: float=None, 
+                        n_trials: int = 200, step_size: float=0.1, 
+                        prob_fugal: float = 1.0, base_seed: int = 42, 
+                        init_num: int = 1, bin_size_interp: float = None, 
+                        n_threads: int = None):
     """
-    all_walks = []
-    all_bif = []
-    for trial in range(n_trials):
-        seed = base_seed + trial  # unique seed per trial
-        sp, bif = random_walk_1d(rate_bifurcation, rate_annihilation, max_distance=max_distance, max_time=max_time, step_size=step_size, prob_fugal=prob_fugal, seed=seed, init_num=init_num, bin_size_interp=bin_size_interp)
-        all_walks.append(sp)
-        all_bif.append(bif)
+    Run multiple trials of the random walk in parallel using threads.
+
+    Parameters
+    ----------
+    n_threads : int or None
+        Number of worker threads. None -> defaults to os.cpu_count().
+    """
+
+    def one_trial(trial):
+        seed = base_seed + trial
+        return random_walk_1d(
+            rate_bifurcation, rate_annihilation,
+            max_distance=max_distance, max_time=max_time,
+            step_size=step_size, prob_fugal=prob_fugal,
+            seed=seed, init_num=init_num, bin_size_interp=bin_size_interp
+        )
+
+    results = [None] * n_trials
+    with ThreadPoolExecutor(max_workers=n_threads) as executor:
+        futures = {executor.submit(one_trial, t): t for t in range(n_trials)}
+        for future in as_completed(futures):
+            t_idx = futures[future]
+            results[t_idx] = future.result()
+
+    all_walks, all_bif = zip(*results)
     return np.array(all_walks), np.array(all_bif)
-
-
 
 
 if __name__ == '__main__':
@@ -243,15 +258,17 @@ if __name__ == '__main__':
     flag = True
     for b in branches.values():
         b = np.array(b)
-        plt.plot(b[:, 0], np.abs(b[:, 1]) * step_size, color='red', label=r'BRW, sh. $\beta$ and $\alpha$' if flag else None, alpha=0.8, linewidth=0.25)
+        plt.plot(b[:, 0], np.abs(b[:, 1]) * step_size, color='red', label=r'BRW, sh. $\beta$ and $\alpha$' if flag else None, alpha=0.5, linewidth=0.125)
         flag = False
 
     branches = random_walk_1d(rb + sh2, ra, max_time=max_time, prob_fugal = prob_fugal2, step_size = step_size, store_moves=True, init_num = init_num)[-1] # test
     flag = True
     for b in branches.values():
         b = np.array(b)
-        plt.plot(b[:, 0], np.abs(b[:, 1]) * step_size, color='blue', label=r'BRW, inc.  $\beta$' if flag else None, alpha=0.5, linewidth=0.25)
+        plt.plot(b[:, 0], np.abs(b[:, 1]) * step_size, color='blue', label=r'BRW, inc.  $\beta$' if flag else None, alpha=0.5, linewidth=0.125)
         flag = False
+
+
         
     plt.xlabel('t')
     plt.ylabel('x')

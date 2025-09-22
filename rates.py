@@ -40,7 +40,10 @@ def solve_qp(step_size, dx, Z, V, n_bif=None, max_iter=10000, kappa_Penalty_Mean
 
     # get the kappa
     kappa = np.log(Z[1:] / Z[:-1]) / dx
-    
+
+    if np.any(kappa == 0):
+        kappa += 1e-5
+        
     model = ConcreteModel()
 
     # Define index set and variables

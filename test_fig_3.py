@@ -5,13 +5,13 @@ import model
 import rates
 
 import pandas as pd
-
+pd.set_option('display.float_format', '{:.2f}'.format)
 
 
 from stats import *
 from rw import *
 
-
+import bootstrap_test as bst
 
     
 
@@ -87,7 +87,7 @@ def rowwise_mean_sd(data, bin_size, index_names=None):
 
 
 def plot_histogram(data, bins=10, title='', xlabel='number of branch points', ylabel='frequency',
-                   color='black', edgecolor=None, exp_mean=None, exp_std=None):
+                   color='black', edgecolor=None, exp_mean=None, exp_std=None, xlim=None, ylim=None):
     """
     Plots a histogram from a NumPy array using matplotlib and shows:
     - Mean ± std of the data
@@ -108,8 +108,11 @@ def plot_histogram(data, bins=10, title='', xlabel='number of branch points', yl
     std = np.std(data)
 
     plt.figure(figsize=(3.5, 4.8/6.4*4))
-    counts, bins_edges, _ = plt.hist(data, bins=np.linspace(0,60,bins), color=color, edgecolor=edgecolor)
+    if xlim is None:
+        xlim = [0, round(max(data) / 5) * 5]
+    counts, bins_edges, _ = plt.hist(data, bins=np.linspace(xlim[0], xlim[1], bins), color=color, edgecolor=edgecolor)
 
+    
     # Positioning error bars
     y_max = max(counts)
     y1 = y_max + y_max * 0.05       # position for main mean±SD
@@ -128,7 +131,8 @@ def plot_histogram(data, bins=10, title='', xlabel='number of branch points', yl
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.xlim([-5,65])
+    plt.xlim(xlim)
+    plt.ylim(ylim)
     #plt.ylim([0,50]) #(top=y2 + y_max * 0.15)  # ensure both error bars are visible
     plt.legend(loc='upper right')
     plt.tight_layout()
@@ -137,24 +141,24 @@ def plot_histogram(data, bins=10, title='', xlabel='number of branch points', yl
     #plt.show()
 
     
-def plot_two_curves_with_errorbars(x, y1, err1, y2, err2, 
+def plot_two_curves_with_errorbars(x1, y1, err1, x2, y2, err2, 
                                     label1='Sim', label2='Exp', 
                                     color1='black', color2='lightgray', 
                                     xlabel='distance from soma($\mu$m)', ylabel='intersections', title='',
-                                    significant_bins1=[], significant_bins2=[], marker_height1=0.1, marker_height2=10):
+                                    significant_bins1=[], significant_bins2=[], marker_height1=0.1, marker_height2=10, xlim=[-5, 725], dx=50, ylim=[0, 25], figsize=(7, 4.8/6.4*4)):
     
-    return plot_three_curves_with_errorbars(x, y1, err1, y2, err2, y3=None, err3=None,
+    return plot_three_curves_with_errorbars(x1, y1, err1, x2, y2, err2, y3=None, err3=None,
                                     label1=label1, label2=label2, 
                                     color1=color1, color2=color2, 
                                     xlabel=xlabel, ylabel=ylabel, title=title,
-                                    significant_bins1=significant_bins1, significant_bins2=significant_bins2, marker_height1=marker_height1, marker_height2=marker_height2)
+                                    significant_bins1=significant_bins1, significant_bins2=significant_bins2, marker_height1=marker_height1, marker_height2=marker_height2, xlim=xlim, dx=dx, ylim=ylim, figsize=figsize)
                                      
     
-def plot_three_curves_with_errorbars(x, y1, err1, y2, err2, y3=None, err3=None,
+def plot_three_curves_with_errorbars(x1, y1, err1, x2, y2, err2, x3=None, y3=None, err3=None,
                                     label1='Sim', label2='Exp', label3='Test',
                                     color1='black', color2='lightgray', color3='red',
                                     xlabel='distance from soma($\mu$m)', ylabel='intersections', title='',
-                                    significant_bins1=[], significant_bins2=[], marker_height1=0.1, marker_height2=10):
+                                    significant_bins1=[], significant_bins2=[], marker_height1=0.1, marker_height2=10, xlim=[-5, 725], dx=50, ylim=[0, 25], figsize=(7, 4.8/6.4*4)):
     """
     Plots two curves with error bars and asterisk markers for statistically significant bins.
 
@@ -168,29 +172,29 @@ def plot_three_curves_with_errorbars(x, y1, err1, y2, err2, y3=None, err3=None,
         significant_bins (list of bool or indices): Marks "*" on x positions where True or present.
         marker_height (float): Additional vertical space above the highest error bar at a bin.
     """
-    plt.figure(figsize=(7, 4.8/6.4*4))
+    plt.figure(figsize=figsize)
 
     pad = 700 * 0.0075 #(x[-1] - x[0]) * 0.01
 
     # Plot error bars
     if y3 is not None and err3 is not None:
-        plt.errorbar(x - pad, y3, yerr=err3, label=label3, fmt='-o', color=color3, capsize=0)
-        plt.errorbar(x, y2, yerr=err2, label=label2, fmt='-o', color=color2, capsize=0)
-        plt.errorbar(x + pad, y1, yerr=err1, label=label1, fmt='-o', color=color1, capsize=0)
+        plt.errorbar(x3 - pad, y3, yerr=err3, label=label3, fmt='-o', color=color3, capsize=0)
+        plt.errorbar(x2, y2, yerr=err2, label=label2, fmt='-o', color=color2, capsize=0)
+        plt.errorbar(x1 + pad, y1, yerr=err1, label=label1, fmt='-o', color=color1, capsize=0)
     else:
-        plt.errorbar(x + pad, y2, yerr=err2, label=label2, fmt='-o', color=color2, capsize=0, mfc='white')
-        plt.errorbar(x - pad, y1, yerr=err1, label=label1, fmt='-o', color=color1, capsize=0)
+        plt.errorbar(x2 + pad, y2, yerr=err2, label=label2, fmt='-o', color=color2, capsize=0, mfc='white')
+        plt.errorbar(x1 - pad, y1, yerr=err1, label=label1, fmt='-o', color=color1, capsize=0)
         
     # Handle significance markers
-    for xi in x:
+    for ii, xi in enumerate(x1 if len(x1) < len(x2) else x2):
             # Calculate the higher point between the two ± error
             top1 = y1[xi] + err1[xi]
             top2 = y2[xi] + err2[xi]
             ymax = max(top1, top2)
             if xi in significant_bins1:
-                plt.text(xi + pad, ymax + marker_height1, "*", ha='center', va='bottom', fontsize=14, color='black')
+                plt.text((x1[ii]+x2[ii])*0.5, ymax + marker_height1, "*", ha='center', va='bottom', fontsize=14, color='black')
             if xi in significant_bins2:
-                plt.text(xi - pad, ymax + marker_height2, "#", ha='center', va='bottom', fontsize=14, color='black')
+                plt.text((x1[ii]+x2[ii])*0.5, ymax + marker_height2, "#", ha='center', va='bottom', fontsize=14, color='black')
 
                 
     # Format plot
@@ -201,26 +205,31 @@ def plot_three_curves_with_errorbars(x, y1, err1, y2, err2, y3=None, err3=None,
     plt.tight_layout()
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
-    plt.xlim([-25, 725])
-    plt.ylim([0, 25])
+    plt.xlim([xlim[0]-dx/2,xlim[1]+dx/2])
+    plt.xticks(np.arange(xlim[0], xlim[1]+dx, dx))
+    plt.ylim(ylim)
+    plt.yticks(np.arange(ylim[0], ylim[1]+5, 5))
     #plt.show()
     
 
 
 
-def compare_dataframes(df1, df2, n1, n2):
+def compare_dataframes(df1, df2, one_sample=False):
     p_values = {'Distance':list(), 'Mean':list(), 'SD':list()}
-    assert (df1.index == df2.index).all()
-    for d in df1.index:
+    print(df1.index, df2.index)
+    #assert (df1.index == df2.index).all()
+    index = df1.index if len(df1.index) < len(df2.index) else df2.index
+    for d in index:
         p_values['Distance'].append(d)
-        if n2:
-            r = two_samples_tests(df1.loc[d, 'Mean'], df1.loc[d, 'SD'] ** 2, n1, df2.loc[d, 'Mean'], df2.loc[d, 'SD'] ** 2, n2)
-            p_values['Mean'].append(r['Z Test']['p_value'])
-            p_values['SD'].append(r['F Test']['p_value'])
+        sample1 = df1.loc[d, df1.columns[df1.columns.str.startswith('Count')]]
+        if one_sample:
+            r = bst.bootstrap_test_vs_theor(sample1, df2.loc[d, 'Mean'], df2.loc[d, 'SD'] ** 2)
+            p_values['Mean'].append(r['mean']['p_value'])
+            p_values['SD'].append(r['variance']['p_value'])
         else:
-            r = one_sample_tests(df1.loc[d, 'Mean'], df1.loc[d, 'SD'] ** 2, n1, df2.loc[d, 'Mean'], df2.loc[d, 'SD'] ** 2)
-            p_values['Mean'].append(r['T Test']['p_value'])
-            p_values['SD'].append(r['Chi2 Test']['p_value'])
+            sample2 = df2.loc[d, df2.columns[df2.columns.str.startswith('Count')]]
+            p_values['Mean'].append(bst.bootstrap_pvalue_mean_diff(sample1, sample2)[0])
+            p_values['SD'].append(bst.bootstrap_pvalue_var_ratio(sample1, sample2)[0])
     return pd.DataFrame(p_values).set_index('Distance')
 
 
@@ -322,39 +331,63 @@ if __name__ == "__main__":
 
     # number of bifurcations
     data_bif = {
-        'SP':{'Mean':18.8, 'SD':4.3},
-        'SL':{'Mean':18.0, 'SD':9.9},
+        'PYR':{'Samples':pd.read_csv('pyr_bifurcations.txt')['0'].to_numpy()},
+        'SL':{'Samples':pd.read_csv('sl_bifurcations.txt')['0'].to_numpy()},
+        'neocortex':{'Samples':pd.read_csv('neocortex_bifurcations.txt')['0'].to_numpy()},
+        'tufted':{'Samples':pd.read_csv('tufted_bifurcations.txt')['0'].to_numpy()},
+        'mitral':{'Samples':pd.read_csv('mitral_bifurcations.txt')['0'].to_numpy()},
         }[cell_type]
-    
-    # get number of neurons from Bathellier et al
-    n_exp_neuron = {
-        'SP':12,
-        'SL':3
-        }[cell_type]
+
+    # re-calculate
+    data_bif['Mean'] = np.mean(data_bif['Samples'])
+    data_bif['SD'] = np.std(data_bif['Samples'])
+##    
+##    # get number of neurons from Bathellier et al
+##    n_exp_neuron = {
+##        'PYR':12,
+##        'SL':3,
+##        'hippocampus':222,
+##        'neocortex':500,
+##        }[cell_type]
+
+    hist_xlim, hist_ylim, sholl_xlim, sholl_dx, sholl_ylim, figsize = {
+        'SL':([0, 80], [0, 200], [0, 700], 50, [0, 20], (7, 4.8/6.4*4)),
+        'PYR':([0, 80], [0, 200], [0, 700], 50, [0, 20], (7, 4.8/6.4*4)),
+        'neocortex':([0, 160], [0, 200], [0, 1200], 100, [0, 20], (7, 4.8/6.4*4)),
+        'mitral':([0, 160], [0, 200], [0, 1200], 100, [0, 35], (7, 4.8/6.4*4)),
+        'tufted':([0, 160], [0, 200], [0, 1200], 100, [0, 35], (7, 4.8/6.4*4))
+         }[cell_type]
     
     try:
         n_trials = int(sys.argv[sys.argv.index('--n_trials') + 1])
     except ValueError:
-        n_trials = 50
+        n_trials = 200
 
     try:
         bif_factor = float(sys.argv[sys.argv.index('--n-bif-factor')+1])
     except ValueError:
         bif_factor = 1
 
+
     if '--n-bif-mean' in sys.argv:
         n_bif = (data_bif['Mean'] * bif_factor, None)
+        suffix = '_bif_mean'
     elif '--n-bif-var' in sys.argv:
         n_bif = (None, (data_bif['SD'] * bif_factor) ** 2)
+        suffix = '_bif_var'
     elif '--n-bif-both' in sys.argv:
         n_bif = (data_bif['Mean'] * bif_factor, (data_bif['SD'] * bif_factor) ** 2)
+        suffix = '_bif_mean_var'
+        hist_ylim = {'mitral':[0, 200], 'tufted':[0, 200], 'SL':[0, 100], 'PYR':[0, 100], 'neocortex':[0, 100]}[cell_type]
     else:
         n_bif = (None, None)
+        suffix = ''
 
+        
     try:
         step_size = float(sys.argv[sys.argv.index('--step_size')+1])
     except ValueError:
-        step_size = 5
+        step_size = 0.1
 
     try:
         prob_fugal = float(sys.argv[sys.argv.index('--prob_fugal')+1])
@@ -366,15 +399,23 @@ if __name__ == "__main__":
     except ValueError:
         alpha = 0.01
         
-    assert cell_type == 'SL' or cell_type == 'SP'   # check cell type is correct
     
-    filepath = {'SP':'sp_apical_sholl_plot.txt', 'SL':'sl_apical_sholl_plot.txt'}[cell_type] # file containing sholl plots
+    filepath = {'PYR':'pyr_apical_sholl_plot.txt', 'SL':'sl_apical_sholl_plot.txt', 'neocortex':'neocortex_apical_sholl_plot.txt',
+                'mitral':'mitral_sholl_plot.txt', 'tufted':'tufted_sholl_plot.txt'}[cell_type] # file containing sholl plots
     
     # load the sholl plots
     exp_data = read_distance_csv_no_header(filepath)
-    exp_data.drop(exp_data[(exp_data.Mean == 0) & (exp_data.SD == 0)].index, inplace=True)
+    exp_data_cpy = exp_data.copy()
+    
+    data_columns = exp_data.columns[exp_data.columns.str.startswith('Count')]
+    exp_data['Mean'] = exp_data[data_columns].mean(axis=1)
+    exp_data['SD'] = exp_data[data_columns].std(axis=1)
+    exp_data.drop(data_columns, axis=1, inplace=True)
+    exp_data.drop(exp_data[exp_data.Mean == 0].index, inplace=True)
 
+    exp_data_cpy = exp_data_cpy.loc[exp_data.index, :] # drop 0s
 
+    print(n_bif)
     # assess equal size of intervals
     dx = np.unique(np.diff(exp_data.index))
     assert dx.size == 1
@@ -392,36 +433,54 @@ if __name__ == "__main__":
     # run multiple trials
     xp = np.arange(0, rate_bifurcation.size) * dx
     all_walks, num_bifurcations = run_multiple_trials(np.array([xp, rate_bifurcation]).T, np.array([xp, rate_annihilation]).T,
-                                                      prob_fugal=prob_fugal, init_num=init_num, bin_size_interp=dx, n_trials=n_trials, step_size=step_size, base_seed=0)
+                                                      prob_fugal=prob_fugal, init_num=init_num, bin_size_interp=dx, n_trials=n_trials, step_size=step_size, base_seed=450)
     # get the number of bifurcations
     num_bifurcations = [ tmp[-1, 1] for tmp in num_bifurcations ]
 
     # calculate the sholl plots for simulation data
     tmp = np.array([walk[:, 1].reshape(-1) for walk in all_walks]).T
+    sim_data_cpy = pd.DataFrame(tmp)
+    sim_data_cpy.columns = [ 'Count%d' % i for i in sim_data_cpy.columns ]
+    sim_data_cpy['Distance'] = all_walks[0][:, 0]
+    sim_data_cpy.set_index('Distance', inplace=True)
+
     sim_data = rowwise_mean_sd(tmp, dx)
+    sim_data.drop(sim_data[sim_data.Mean == 0].index, inplace=True)
+
+    sim_data_cpy = sim_data_cpy.loc[sim_data.index, :] # drop 0s
 
     # calculate theoretical sholl plots
     theor_data = expected_mean_sd(exp_data.loc[0, 'Mean'], exp_data.loc[0, 'SD'] ** 2, rate_bifurcation, rate_annihilation, dx)
 
-    # perform tests between sholl plots
-    if sim_data.size == exp_data.size:
-        r = compare_dataframes(sim_data, exp_data, n_trials, n_exp_neuron)
-        print('\nsim vs exp')
-        print(r, '\n\n')
-        significant_bins1 = r[r.SD < alpha].index
-        significant_bins2 = r[r.Mean < alpha].index
-        
-        r = compare_dataframes(sim_data, theor_data, n_trials, None)
-        print('\nsim vs theor')
-        print(r, '\n\n')
+    print(sim_data)
+    print(exp_data)
 
-        r = compare_dataframes(exp_data, theor_data, n_exp_neuron, None)
-        print('\nexp vs theor')
-        print(r, '\n\n')
-        
-        print('Exp\n', exp_data, '\n')
-        print('Sim\n', sim_data, '\n')
-        print('Th.\n', theor_data, '\n')
+    # perform tests between sholl plots
+    #if sim_data.size == exp_data.size:
+    r = compare_dataframes(sim_data_cpy, exp_data_cpy)
+    print('\nsim vs exp')
+    print(r, '\n\n')
+    significant_bins1 = r[(r.SD < alpha / r.size) & (exp_data.SD > 0)].index
+    significant_bins2 = r[r.Mean < alpha  / r.size].index
+    
+    r = compare_dataframes(sim_data_cpy, theor_data, one_sample=True)
+    
+    print(r)
+    r.Mean = r.Mean < alpha / r.size
+    r.SD = r.SD < alpha / r.size
+    print('\nsim vs theor')
+    print(r, '\n\n')
+
+    r = compare_dataframes(exp_data_cpy, theor_data, one_sample=True)
+    print(r)
+    r.Mean = r.Mean < alpha / r.size
+    r.SD = r.SD < alpha / r.size
+    print('\nexp vs theor')
+    print(r, '\n\n')
+    
+    print('Exp\n', exp_data, '\n')
+    print('Sim\n', sim_data, '\n')
+    print('Th.\n', theor_data, '\n')
     
     # compare mean and variances
 
@@ -433,18 +492,16 @@ if __name__ == "__main__":
 
     bif_mean_theor, bif_std_theor = total_bifurcation_mean_std(dx, rate_bifurcation, rate_annihilation, theor_data['Mean'].to_numpy(), np.power(theor_data['SD'].to_numpy(), 2))
 
-    print(bif_mean_exp, bif_std_exp)
-    print(bif_mean_theor, bif_std_theor) 
-    # compare number of bifurcations    
+    
     print(f'Exp:\t{bif_mean_exp:.1f}+/-{bif_std_exp:.1f}\nSim:\t{bif_mean_sim:.1f}+/-{bif_std_sim:.1f}\nTheor.:\t{bif_mean_theor:.1f}+/-{bif_std_theor:.1f}')
-
-    r = one_sample_tests(bif_mean_exp, bif_std_exp ** 2, n_exp_neuron, mean_h0=bif_mean_theor, var_h0=bif_std_theor ** 2)
+    r = bst.bootstrap_test_vs_theor(data_bif['Samples'], bif_mean_theor, bif_std_theor ** 2)
     print('exp vs th', r)
                           
-    r = one_sample_tests(bif_mean_sim, bif_std_sim ** 2, n_trials, mean_h0=bif_mean_theor, var_h0=bif_std_theor ** 2)
+    r = bst.bootstrap_test_vs_theor(num_bifurcations, bif_mean_theor, bif_std_theor ** 2)
     print('sim vs th', r)
 
-    r = two_samples_tests(bif_mean_sim, bif_std_sim ** 2, n_trials, bif_mean_exp, bif_std_exp ** 2, n_exp_neuron)
+##    r = two_samples_tests(bif_mean_sim, bif_std_sim ** 2, n_trials, bif_mean_exp, bif_std_exp ** 2, n_exp_neuron)
+    r = [ bst.bootstrap_pvalue_mean_diff(num_bifurcations, data_bif['Samples'])[0], bst.bootstrap_pvalue_var_ratio(num_bifurcations, data_bif['Samples'])[0] ]
     print('sim vs exp', r)
     
         
@@ -454,10 +511,11 @@ if __name__ == "__main__":
     plt.rcParams['axes.labelweight'] = 'bold'
     plt.rcParams['axes.titleweight'] = 'bold'
     
-    plot_histogram(num_bifurcations, exp_mean=bif_mean_exp, exp_std=bif_std_exp)
-    plt.savefig(f'hist_{cell_type}.png', dpi=300)
+    plot_histogram(num_bifurcations, exp_mean=bif_mean_exp, exp_std=bif_std_exp, xlim=hist_xlim, ylim=hist_ylim)
+    #plt.ylim([0, n_trials])
+    plt.savefig(f'hist_{cell_type}{suffix}.png', dpi=300)
     plt.show()
     
-    plot_two_curves_with_errorbars(sim_data.index, sim_data.Mean, sim_data.SD, exp_data.Mean, exp_data.SD, significant_bins1=significant_bins1, significant_bins2=significant_bins2)
-    plt.savefig(f'sholl_plots_{cell_type}.png', dpi=300)
+    plot_two_curves_with_errorbars(sim_data.index, sim_data.Mean, sim_data.SD, exp_data.index, exp_data.Mean, exp_data.SD, significant_bins1=significant_bins1, significant_bins2=significant_bins2, xlim=sholl_xlim, ylim=sholl_ylim, dx=sholl_dx, figsize=figsize)
+    plt.savefig(f'sholl_plots_{cell_type}{suffix}.png', dpi=300)
     plt.show()
