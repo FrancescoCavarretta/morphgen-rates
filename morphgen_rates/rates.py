@@ -21,60 +21,60 @@ def mk_objective(model, kappa, Z, V):
     return sum(terms)
 
 def compute_rates(data, max_step_size):
-      """
-      Compute bifurcation and annihilation rates from summary statistics.
+    """
+    Compute bifurcation and annihilation rates from summary statistics.
 
-      The estimator expects Sholl-plot summary statistics (mean and variance per
-      radial bin) and summary statistics of bifurcation counts (mean and variance).
-      These quantities are used to infer the event rates of a branching-and-
-      annihilating process.
+    The estimator expects Sholl-plot summary statistics (mean and variance per
+    radial bin) and summary statistics of bifurcation counts (mean and variance).
+    These quantities are used to infer the event rates of a branching-and-
+    annihilating process.
 
-      Parameters
-      ----------
-      data : dict
-          Input container with the following structure:
+    Parameters
+    ----------
+    data : dict
+      Input container with the following structure:
 
-          data = {
-            "sholl": {
-              "bin_size": float,
-              "mean": numpy.ndarray,   # shape (K,)
-              "var":  numpy.ndarray,   # shape (K,)
-            },
-            "bifurcations": {
-              "mean": float,
-              "var":  float,
-            },
-          }
+      data = {
+        "sholl": {
+          "bin_size": float,
+          "mean": numpy.ndarray,   # shape (K,)
+          "var":  numpy.ndarray,   # shape (K,)
+        },
+        "bifurcations": {
+          "mean": float,
+          "var":  float,
+        },
+      }
 
-          Where:
-          - `data["sholl"]["bin_size"]` is the spatial bin size used to build the Sholl plot
-          - `data["sholl"]["mean"][i]` is the mean Sholl intersection count in bin i
-          - `data["sholl"]["var"][i]` is the variance of the Sholl intersection count in bin i
-          - `data["bifurcations"]["mean"]` is the mean number of bifurcations
-          - `data["bifurcations"]["var"]` is the variance of the number of bifurcations
+      Where:
+      - `data["sholl"]["bin_size"]` is the spatial bin size used to build the Sholl plot
+      - `data["sholl"]["mean"][i]` is the mean Sholl intersection count in bin i
+      - `data["sholl"]["var"][i]` is the variance of the Sholl intersection count in bin i
+      - `data["bifurcations"]["mean"]` is the mean number of bifurcations
+      - `data["bifurcations"]["var"]` is the variance of the number of bifurcations
 
-      max_step_size : float
-          Maximum advancement (in distance from the soma) allowed for a single
-          elongation step in the model. This value bounds the radial increment used
-          by the estimator and should be expressed in the same spatial units as the
-          Sholl binning.
+    max_step_size : float
+      Maximum advancement (in distance from the soma) allowed for a single
+      elongation step in the model. This value bounds the radial increment used
+      by the estimator and should be expressed in the same spatial units as the
+      Sholl binning.
 
-      Returns
-      -------
-      dict
-          Dictionary containing the estimated rates and any additional derived values
-          produced by the implementation. At minimum, the returned dictionary is
-          expected to include:
+    Returns
+    -------
+    dict
+      Dictionary containing the estimated rates and any additional derived values
+      produced by the implementation. At minimum, the returned dictionary is
+      expected to include:
 
-          - "bifurcation_rate"
-          - "annihilation_rate"
+      - "bifurcation_rate"
+      - "annihilation_rate"
 
-      Notes
-      -----
-      - `data["sholl"]["mean"]` and `data["sholl"]["var"]` must be 1D arrays of equal length
-      - Variances must be non-negative
-      - Ensure `bin_size` and `max_step_size` use consistent spatial units
-      """    
+    Notes
+    -----
+    - `data["sholl"]["mean"]` and `data["sholl"]["var"]` must be 1D arrays of equal length
+    - Variances must be non-negative
+    - Ensure `bin_size` and `max_step_size` use consistent spatial units
+    """    
 
 ##    Solves a QP problem using Pyomo with vector-style variable indexing.
 ##
