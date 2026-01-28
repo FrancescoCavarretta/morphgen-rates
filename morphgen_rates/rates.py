@@ -1,14 +1,15 @@
 from pyomo.environ import *
 import numpy as np
 
-
-def getA_term(model, kappa, Z, V, m, i):
-    return model.b[m] * 2 * Z[i] ** 2 * (Z[m + 1] - Z[m]) / (Z[m + 1] * Z[m]) / kappa[m]
-
-def getB_term(kappa, Z, V, m):
-    return (Z[m + 1] - Z[m]) / (Z[m + 1] * Z[m])
-    
 def mk_objective(model, kappa, Z, V):
+    
+    def getA_term(model, kappa, Z, V, m, i):
+        return model.b[m] * 2 * Z[i] ** 2 * (Z[m + 1] - Z[m]) / (Z[m + 1] * Z[m]) / kappa[m]
+
+    def getB_term(kappa, Z, V, m):
+        return (Z[m + 1] - Z[m]) / (Z[m + 1] * Z[m])
+    
+
     terms = []
     for i in range(1, kappa.size + 1):
         B = (V[0] - sum(getB_term(kappa, Z, V, m) for m in range(0, i))) * (Z[i] ** 2)
