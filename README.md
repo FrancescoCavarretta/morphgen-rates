@@ -1,15 +1,17 @@
-````markdown
 # morphgen-rates
 
 Python package to compute **bifurcation** and **annihilation** rates from morphology-derived data.
 
-## Install (local development)
+## Provenance
 
-From the repository root:
+This package is based on code originally provided in the repository:
 
-```bash
-pip install -e .
-````
+- https://github.com/FrancescoCavarretta/NeuronSynthesis
+
+The original repository was developed for the following publication:
+
+- Cavarretta F (2025) *A mathematical model for data-driven synthesis of neuron morphologies based on random walks.* Front. Appl. Math. Stat. 11:1632271. doi: 10.3389/fams.2025.1632271
+
 
 ## Quick start
 
@@ -23,27 +25,6 @@ print(rates["bifurcation_rate"])
 print(rates["annihilation_rate"])
 ```
 
-## API
-
-### `compute_rates(data, *, dt=None, **kwargs)`
-
-Computes bifurcation and annihilation rates from the provided input.
-
-* `data` is your input dataset (format depends on your project)
-* `dt` can be used to convert counts-per-step into a physical/time rate (optional)
-
-Returns a dictionary with (at minimum):
-
-* `bifurcation_rate`
-* `annihilation_rate`
-
-## Development
-
-Run tests:
-
-```bash
-pytest
-```
 
 ## License
 
