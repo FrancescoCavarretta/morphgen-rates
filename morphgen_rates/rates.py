@@ -21,16 +21,69 @@ def mk_objective(model, kappa, Z, V):
     return sum(terms)
 
 def compute_rates(data, max_step_size):
-    
-    """
-    Solves a QP problem using Pyomo with vector-style variable indexing.
+      """
+      Compute bifurcation and annihilation rates from summary statistics.
 
-    Minimize: 0.5*x[0]^2 + x[1]^2 + x[0]*x[1] + 3*x[0]
-    Subject to: x[0] + x[1] >= 1, x[i] >= 0
+      The estimator expects Sholl-plot summary statistics (mean and variance per
+      radial bin) and summary statistics of bifurcation counts (mean and variance).
+      These quantities are used to infer the event rates of a branching-and-
+      annihilating process.
 
-    Returns:
-        np.ndarray: [x[0], x[1], objective_value]
-    """
+      Parameters
+      ----------
+      data : dict
+          Input container with the following structure:
+
+          data = {
+            "sholl": {
+              "bin_size": float,
+              "mean": numpy.ndarray,   # shape (K,)
+              "var":  numpy.ndarray,   # shape (K,)
+            },
+            "bifurcations": {
+              "mean": float,
+              "var":  float,
+            },
+          }
+
+          Where:
+          - `data["sholl"]["bin_size"]` is the spatial bin size used to build the Sholl plot
+          - `data["sholl"]["mean"][i]` is the mean Sholl intersection count in bin i
+          - `data["sholl"]["var"][i]` is the variance of the Sholl intersection count in bin i
+          - `data["bifurcations"]["mean"]` is the mean number of bifurcations
+          - `data["bifurcations"]["var"]` is the variance of the number of bifurcations
+
+      max_step_size : float
+          Maximum advancement (in distance from the soma) allowed for a single
+          elongation step in the model. This value bounds the radial increment used
+          by the estimator and should be expressed in the same spatial units as the
+          Sholl binning.
+
+      Returns
+      -------
+      dict
+          Dictionary containing the estimated rates and any additional derived values
+          produced by the implementation. At minimum, the returned dictionary is
+          expected to include:
+
+          - "bifurcation_rate"
+          - "annihilation_rate"
+
+      Notes
+      -----
+      - `data["sholl"]["mean"]` and `data["sholl"]["var"]` must be 1D arrays of equal length
+      - Variances must be non-negative
+      - Ensure `bin_size` and `max_step_size` use consistent spatial units
+      """    
+
+##    Solves a QP problem using Pyomo with vector-style variable indexing.
+##
+##    Minimize: 0.5*x[0]^2 + x[1]^2 + x[0]*x[1] + 3*x[0]
+##    Subject to: x[0] + x[1] >= 1, x[i] >= 0
+##
+##    Returns:
+##        np.ndarray: [x[0], x[1], objective_value]
+
 
     global _Mean_Penalty, _Var_Penalty
     dx = data['sholl']['bin_size']
