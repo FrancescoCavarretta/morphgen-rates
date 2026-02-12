@@ -91,9 +91,7 @@ rates = compute_rates(rate_input, max_step_size=25.0)
 
 # Step 5: Display results
 print("Bifurcation rates by radial bin:")
-for i, (bif, ann) in enumerate(
-    zip(rates["bifurcation_rate"], rates["annihilation_rate"])
-):
+for i, (bif, ann) in enumerate(zip(rates["bifurcation_rate"], rates["annihilation_rate"])):
     distance = apical["sholl_plot"]["bin_size"] * (i + 0.5)
     print(f"  {distance:.1f} μm: β={bif:.4f}, α={ann:.4f}")
 ```
