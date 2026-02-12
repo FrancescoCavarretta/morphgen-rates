@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: morphgen-rates
-Version: 0.5.3
+Version: 1.1.0
 Summary: Compute bifurcation and annihilation rates from morphology data
 Author-email: Francesco Cavarretta <fcavarretta@ualr.edu>
 Requires-Python: >=3.9

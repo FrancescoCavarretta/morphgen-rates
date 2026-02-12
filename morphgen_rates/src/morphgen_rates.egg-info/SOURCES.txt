@@ -11,5 +11,3 @@ src/morphgen_rates.egg-info/SOURCES.txt
 src/morphgen_rates.egg-info/dependency_links.txt
 src/morphgen_rates.egg-info/requires.txt
 src/morphgen_rates.egg-info/top_level.txt
-tests/test_primary_count.py
-tests/test_rates.py
