@@ -1,4 +1,4 @@
-# MorphGen-Rates Documentation
+# Documentation
 
 * [Overview](#1-overview)
 * [Installation](#2-installation)
