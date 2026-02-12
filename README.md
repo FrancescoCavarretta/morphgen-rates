@@ -3,6 +3,14 @@
 ## Overview
 
 `morphgen-rates` is a Python package that estimates bifurcation and annihilation rates from morphological data obtained from experimentally reconstructed neuron morphologies. These rates are core parameters in mathematical models used to generate realistic neuron morphologies via random-walk–based generation processes.
+This package implements computational methods from:
+
+- Cavarretta F (2025) *A mathematical model for data-driven synthesis of neuron morphologies based on random walks.* Front. Appl. Math. Stat. 11:1632271. doi: 10.3389/fams.2025.1632271
+
+For questions, issues, or contributions, please contact:
+
+- Author: Francesco Cavarretta
+- Email: fcavarretta@ualr.edu
 
 ### What does this package do?
 
@@ -16,14 +24,6 @@ The rates vary with distance from the soma and are inferred from:
 - **Sholl analysis data**: Mean and standard deviation of dendrite intersection counts across radial distance bins from the soma
 - **Bifurcation statistics (Optional)**: Summary statistics describing the number of branching points in the reconstructed dendritic tree
 
-This package implements computational methods from:
-
-- Cavarretta F (2025) *A mathematical model for data-driven synthesis of neuron morphologies based on random walks.* Front. Appl. Math. Stat. 11:1632271. doi: 10.3389/fams.2025.1632271
-
-For questions, issues, or contributions, please contact:
-
-- Author: Francesco Cavarretta
-- Email: fcavarretta@ualr.edu
 
 ## Installation
 
