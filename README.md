@@ -1,11 +1,20 @@
 # MorphGen-Rates Documentation
 
-## Overview
+* [Overview](#1-overview)
+* [Installation](#2-installation)
+* [Quick start](#3-quick-start)
+* [Data Format Specifications](#4-data-format-specifications)
+* [Troubleshooting](#5-troubleshooting)
+
+## 1. Overview
 
 `morphgen-rates` is a Python package that estimates bifurcation and annihilation rates from morphological data obtained from experimentally reconstructed neuron morphologies. These rates are core parameters in mathematical models used to generate realistic neuron morphologies via random-walk–based generation processes.
+
+[View the full repository on GitHub](https://github.com/fcavarretta-ualr/morphgen-rates)
+
 This package implements computational methods from:
 
-- Cavarretta F (2025) *A mathematical model for data-driven synthesis of neuron morphologies based on random walks.* Front. Appl. Math. Stat. 11:1632271. doi: 10.3389/fams.2025.1632271
+- [Cavarretta F (2025) *A mathematical model for data-driven synthesis of neuron morphologies based on random walks.* Front. Appl. Math. Stat. 11:1632271. doi: 10.3389/fams.2025.1632271](https://www.frontiersin.org/journals/applied-mathematics-and-statistics/articles/10.3389/fams.2025.1632271/full)
 
 For questions, issues, or contributions, please contact:
 
@@ -25,7 +34,7 @@ The rates vary with distance from the soma and are inferred from:
 - **Bifurcation statistics (Optional)**: Summary statistics describing the number of branching points in the reconstructed dendritic tree
 
 
-## Installation
+## 2. Installation
 
 ### Requirements
 
@@ -65,7 +74,7 @@ Follow instructions at:
 
 https://github.com/coin-or/Ipopt
 
-## Quick start
+## 3. Quick start
 
 ```python
 # Example 1: Computing rates from built-in data
@@ -96,7 +105,7 @@ for i, (bif, ann) in enumerate(zip(rates["bifurcation_rate"], rates["annihilatio
     print(f"  {distance:.1f} μm: β={bif:.4f}, α={ann:.4f}")
 ```
 
-## Data Format Specifications
+## 4. Data Format Specifications
 
 ### Built-in Dataset Format
 
@@ -117,7 +126,7 @@ The package includes a CSV file (`morph_data.csv`) with the following columns:
 | … | … | … |
 | CountN | float | Sholl intersections at bin N |
 
-## Troubleshooting
+## 5. Troubleshooting
 
 ### Solver Not Found
 
