@@ -12,9 +12,9 @@
 
 [View the full repository on GitHub](https://github.com/fcavarretta-ualr/morphgen-rates)
 
-This package implements computational methods from:
+This package implements computational methods from the publication
 
-- [Cavarretta F (2025) *A mathematical model for data-driven synthesis of neuron morphologies based on random walks.* Front. Appl. Math. Stat. 11:1632271. doi: 10.3389/fams.2025.1632271](https://www.frontiersin.org/journals/applied-mathematics-and-statistics/articles/10.3389/fams.2025.1632271/full)
+[Cavarretta F (2025) *A mathematical model for data-driven synthesis of neuron morphologies based on random walks.* Front. Appl. Math. Stat. 11:1632271. doi: 10.3389/fams.2025.1632271](https://www.frontiersin.org/journals/applied-mathematics-and-statistics/articles/10.3389/fams.2025.1632271/full)
 
 For questions, issues, or contributions, please contact:
 
