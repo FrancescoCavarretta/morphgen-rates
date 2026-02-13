@@ -1,3 +1,4 @@
+<img src="https://raw.githubusercontent.com/fcavarretta-ualr/morphgen-rates/master/docs/morphgen_rates_logo.png" alt="MorphGen-Rates banner" />
 
 # MorphGen-Rates
 
