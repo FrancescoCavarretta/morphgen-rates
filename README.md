@@ -1,4 +1,4 @@
-![Alt text](docs/morphgen_rates_logo.png)
+
 # MorphGen-Rates
 
 * [Overview](#1-overview)
